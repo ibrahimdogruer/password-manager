@@ -3,7 +3,10 @@ export const dummyPasswords = [
         id: 1,
         siteName: "Amazon",
         siteUrl: "https://www.amazon.com",
-        accounts: [{ id: 1, userName: "admin", password: "123456", note: "note" }],
+        accounts: [
+            { id: 1, userName: "admin", password: "123456", note: "note" },
+            { id: 2, userName: "admin1", password: "123456", note: "note" }
+        ],
     },
     {
         id: 2,
