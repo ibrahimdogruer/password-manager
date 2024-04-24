@@ -1,5 +1,12 @@
-import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -10,9 +17,24 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useRouter } from "expo-router";
 import { dummyPasswords } from "../constants";
+import * as LocalAuthentication from "expo-local-authentication";
 
 const Index = () => {
   const router = useRouter();
+
+  const handleBiometricAuth = async (item) => {
+    // authenticate with biometric
+    const biometricAuth = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Use your screen lock",
+      cancelLabel: "Cancel",
+      disableDeviceFallback: false,
+    });
+
+    // Log the user in on success
+    if (biometricAuth && biometricAuth.success) {
+      router.push({ pathname: "/passwordDetail", params: item });
+    }
+  };
 
   const myItemSeparator = () => {
     return <View className="h-px bg-gray-300 mx-8" />;
@@ -35,9 +57,7 @@ const Index = () => {
     return (
       <TouchableOpacity
         className="flex flex-row justify-between items-center p-3"
-        onPress={() =>
-          router.push({ pathname: "/passwordDetail", params: item })
-        }
+        onPress={() => handleBiometricAuth(item)}
       >
         <View className="flex flex-row gap-x-2">
           <Ionicons name="earth" size={22} color="gray" />
