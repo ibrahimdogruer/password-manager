@@ -3,9 +3,7 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   TextInput,
-  Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,11 +16,18 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { dummyPasswords } from "../constants";
-import { useTogglePasswordVisibility, useCopyToClipboard } from "../hooks";
+import {
+  useTogglePasswordVisibility,
+  useCopyToClipboard,
+  useSecureStore,
+} from "../hooks";
+import { Image } from "expo-image";
+import Toast from "react-native-toast-message";
 
 const PaswordDetail = () => {
   const router = useRouter();
   const item = useLocalSearchParams();
+  const { getValueFor } = useSecureStore();
 
   const [passwordItem, setPasswordItem] = useState();
 
@@ -31,16 +36,25 @@ const PaswordDetail = () => {
   }, []);
 
   const getPasswordItem = async () => {
-    let data = dummyPasswords.find((x) => x.id == item.id);
-    setPasswordItem(data);
+    const result = await getValueFor("passwords");
+    if (result) {
+      let data = result.find((x) => x.id == item.id);
+      setPasswordItem(data);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Item not found!",
+      });
+      router.back();
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white flex" edges={["top"]}>
       <StatusBar style="dark" />
 
-      <View className="space-y-1 mx-4">
-        <View className="flex flex-row items-center mt-3">
+      <View className="space-y-1 mx-4 mt-4">
+        <View className="flex flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
             className="mr-2 justify-center items-center pr-1 rounded-full"
@@ -48,12 +62,19 @@ const PaswordDetail = () => {
           >
             <Ionicons name="arrow-back" size={hp(4)} color="#1F2123" />
           </TouchableOpacity>
-          <Ionicons name="earth" size={22} color="gray" />
+          <View className="w-6 h-6 rounded flex justify-center items-center">
+            <Image
+              source={{ uri: `${passwordItem?.siteUrl}/favicon.ico` }}
+              width={22}
+              height={22}
+              placeholder={require("../assets/images/earth.png")}
+            />
+          </View>
           <Text
             style={{ fontSize: hp(3.5) }}
             className="text-neutral-700 font-semibold ml-2 tracking-wide"
           >
-            {passwordItem?.siteName}
+            {passwordItem?.name}
           </Text>
         </View>
 
@@ -114,10 +135,10 @@ const PasswordCard = ({ item, index, siteUrl }) => {
             style={{ fontSize: hp(2.0) }}
             className="text-neutral-700 font-semibold w-11/12"
             readOnly
-            value={item.userName}
+            value={item.username}
           />
           <TouchableOpacity
-            onPress={() => copyToClipboard(item.userName, "Username")}
+            onPress={() => copyToClipboard(item.username, "Username")}
           >
             <MaterialIcons name="content-copy" size={20} color="#1F2123" />
           </TouchableOpacity>
@@ -162,10 +183,12 @@ const PasswordCard = ({ item, index, siteUrl }) => {
           Note
         </Text>
         <TextInput
-          style={{ fontSize: hp(2.0) }}
+          style={{ fontSize: hp(2.0), textAlignVertical: "top" }}
           className="bg-gray-200 text-neutral-700 font-semibold py-2 px-4 rounded-2xl"
+          multiline={true}
+          numberOfLines={4}
           readOnly
-          defaultValue={item.note}
+          value={item.note}
         />
       </View>
     </View>

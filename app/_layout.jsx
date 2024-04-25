@@ -18,6 +18,12 @@ export default function _layout() {
             presentation: "modal",
           }}
         />
+        <Stack.Screen
+          name="addNew"
+          options={{
+            presentation: "modal",
+          }}
+        />
       </Stack>
       <Toast position="bottom" bottomOffset={20} />
     </>
